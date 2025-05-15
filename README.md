@@ -37,7 +37,7 @@ A web application for backtesting stock trading strategies using historical data
 1. Clone the repository:
 
    ```
-   git clone https://github.com/yourusername/stock-backtester.git
+   git clone https://github.com/tomermeirovich/stock-backtester.git
    cd stock-backtester
    ```
 
