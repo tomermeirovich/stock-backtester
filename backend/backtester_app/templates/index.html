@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Backtester</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <h1>Stock Backtester</h1>
+        <p class="subtitle">
+          Analyze common trading strategies on historical stock data
+        </p>
+      </header>
+
+      <section class="info-section">
+        <h2>About This Backtester</h2>
+        <div class="info-content">
+          <h3>Trading Strategies</h3>
+          <p>
+            This backtester includes several of the most popular trading
+            strategies used by professional and retail traders:
+          </p>
+          <ul>
+            <li>
+              <strong>Golden Cross (50/200 SMA):</strong> A long-term trend
+              following strategy. Buy when the 50-day moving average crosses
+              above the 200-day moving average, sell when it crosses below.
+            </li>
+            <li>
+              <strong>Dual Moving Average (10/30 SMA):</strong> A medium-term
+              trend following strategy. Buy when the 10-day moving average
+              crosses above the 30-day moving average, sell when it crosses
+              below.
+            </li>
+            <li>
+              <strong>RSI Reversal Strategy:</strong> A mean-reversion strategy.
+              Buy when RSI drops below 30 (oversold) and then rises back above
+              it. Sell when RSI rises above 70 (overbought) and then drops below
+              it.
+            </li>
+            <li>
+              <strong>MACD Signal Line Cross:</strong> A versatile strategy that
+              works in trending and ranging markets. Buy when the MACD line
+              crosses above the signal line, sell when it crosses below.
+            </li>
+            <li>
+              <strong>Bollinger Band Bounce:</strong> A mean-reversion strategy.
+              Buy when price touches the lower band and starts to move up. Sell
+              when price touches the upper band and starts to move down.
+            </li>
+          </ul>
+
+          <h3>Default Parameters</h3>
+          <ul>
+            <li>Initial Investment: $10,000</li>
+            <li>Position Size: 100% of available capital</li>
+            <li>Default Period: January 1, 2020 to present</li>
+          </ul>
+
+          <h3>Data Handling</h3>
+          <ul>
+            <li>
+              <strong>Split-Adjusted Prices:</strong> All prices are adjusted
+              for stock splits and dividends, ensuring that events like AAPL's
+              4-for-1 split in August 2020 don't artificially impact performance
+              metrics.
+            </li>
+            <li>
+              <strong>Historical Data:</strong> Price data is sourced from Yahoo
+              Finance's API (yfinance) which provides split-adjusted data free
+              of charge.
+            </li>
+            <li>
+              <strong>Signal Generation:</strong> Trading signals are generated
+              only after sufficient data is available for the required
+              indicators.
+            </li>
+          </ul>
+
+          <h3>Performance Metrics Explained</h3>
+          <ul>
+            <li>
+              <strong>Total Return:</strong> The overall percentage gain or loss
+              of the strategy over the backtest period.
+            </li>
+            <li>
+              <strong>Maximum Drawdown:</strong> The largest peak-to-trough
+              decline in the portfolio value, indicating the worst possible
+              loss.
+            </li>
+            <li>
+              <strong>Sharpe Ratio:</strong> A measure of risk-adjusted returns.
+              A Sharpe ratio above 1 is considered good, above 2 is very good,
+              and above 3 is excellent. It indicates how much excess return you
+              get for the extra volatility you endure.
+            </li>
+          </ul>
+
+          <h3>Comparison with SPY</h3>
+          <p>
+            The results are automatically compared with a buy-and-hold strategy
+            for the S&P 500 ETF (SPY) over the same period. This benchmark shows
+            what you would have earned by simply buying and holding SPY from
+            January 2020 to May 2025, which is approximately 81% total return.
+            This comparison helps you understand if your active trading strategy
+            outperforms a passive investment approach.
+          </p>
+        </div>
+      </section>
+
+      <section class="input-section">
+        <h2>Run Backtest</h2>
+        <div class="strategy-selection">
+          <div class="input-row">
+            <div class="input-group">
+              <label for="tickerInput">Stock Symbol:</label>
+              <input
+                type="text"
+                id="tickerInput"
+                placeholder="Enter stock ticker (e.g., AAPL)"
+                value="AAPL"
+              />
+            </div>
+
+            <div class="input-group">
+              <label for="strategySelect">Strategy:</label>
+              <select id="strategySelect">
+                <!-- Options will be populated by JavaScript -->
+              </select>
+            </div>
+          </div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <label for="startDate">Start Date:</label>
+              <input type="date" id="startDate" value="2020-01-01" />
+            </div>
+            <div class="input-group">
+              <label for="endDate">End Date:</label>
+              <input type="date" id="endDate" />
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button id="fetchData">Run Backtest</button>
+          </div>
+        </div>
+        <div id="loadingIndicator" class="loading">Loading...</div>
+      </section>
+
+      <section
+        id="resultsSection"
+        class="results-section"
+        style="display: none"
+      >
+        <h2>Backtest Results</h2>
+        <div class="backtest-period">
+          <p>Period: <span id="backtestPeriod">-</span></p>
+          <p>Strategy: <span id="strategyName">-</span></p>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h3>Strategy Performance</h3>
+            <div class="metric">
+              <label>Total Return:</label>
+              <span id="totalReturn">-</span>
+            </div>
+            <div class="metric">
+              <label>Max Drawdown:</label>
+              <span id="maxDrawdown">-</span>
+            </div>
+            <div class="metric">
+              <label>Sharpe Ratio:</label>
+              <span id="sharpeRatio">-</span>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <h3>SPY Performance</h3>
+            <div class="metric">
+              <label>Total Return:</label>
+              <span id="spyReturn">-</span>
+            </div>
+            <div class="metric">
+              <label>Max Drawdown:</label>
+              <span id="spyDrawdown">-</span>
+            </div>
+            <div class="metric">
+              <label>Sharpe Ratio:</label>
+              <span id="spySharpe">-</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <canvas id="equityCurve"></canvas>
+        </div>
+
+        <div class="trades-section">
+          <h3>Trade History</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Entry Date</th>
+                  <th>Exit Date</th>
+                  <th>Entry Price</th>
+                  <th>Exit Price</th>
+                  <th>Position</th>
+                  <th>P&L</th>
+                </tr>
+              </thead>
+              <tbody id="tradesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script src="{% static 'main.js' %}"></script>
+  </body>
+</html>

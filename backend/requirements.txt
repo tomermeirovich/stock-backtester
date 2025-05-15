@@ -1,0 +1,13 @@
+Django==4.2.7
+djangorestframework==3.14.0
+pandas==2.1.1
+numpy==1.26.1
+python-dotenv==1.0.0
+pytest==7.4.3
+pytest-django==4.5.2
+flake8==6.1.0
+psycopg2-binary==2.9.9
+requests==2.31.0
+django-cors-headers==4.3.1
+yfinance==0.2.59
+curl_cffi>=0.5.10 
